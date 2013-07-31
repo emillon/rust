@@ -1,0 +1,2 @@
+  - mozilla/rust#8006 tidy: allow arbitrary spaces between // and NOTE
+  - mozilla/rust#8029 Check for comparisons to NaN in patterns
