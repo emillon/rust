@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # xfail-license
 
-import sys, fileinput, subprocess, re
+import sys, fileinput, subprocess, re, argparse, os
 from licenseck import *
 
 err=0
@@ -32,9 +32,31 @@ def do_license_check(name, contents):
     if not check_license(name, contents):
         report_error_name_no(name, 1, "incorrect license")
 
+parser = argparse.ArgumentParser(description='Tidy source files.')
+parser.add_argument('--srcdir')
+args = parser.parse_args()
 
-file_names = [s for s in sys.argv[1:] if (not s.endswith("_gen.rs"))
-                                     and (not ".#" in s)]
+file_names = []
+for (dirpath, dirnames, filenames) in os.walk(os.path.join(args.srcdir, 'src')):
+    for name in filenames:
+        if name.endswith("_gen.rs") or ".#" in name:
+            continue
+        def in_dir(d):
+            return dirpath.startswith(os.path.join(args.srcdir, d))
+        def add():
+            file_names.append(os.path.join(dirpath, name))
+        ext = os.path.splitext(name)[1]
+        if ext in ['.rs', '.rc'] and not in_dir('src/test'):
+            add()
+        elif ext in ['.py'] and in_dir('src/etc'):
+            add()
+        elif ext in ['.c', '.cpp', '.h']:
+            if in_dir('src/rt/jemalloc') or in_dir('src/rt/linenoise') \
+                    or in_dir('src/rt/vg') or in_dir('src/rt/msvc'):
+                continue
+            if in_dir('src/rt') or in_dir('src/rustllvm'):
+                if name != 'miniz.cpp':
+                    add()
 
 current_name = ""
 current_contents = ""

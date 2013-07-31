@@ -212,44 +212,9 @@ ifdef CFG_NOTIDY
 tidy:
 else
 
-ALL_CS := $(wildcard $(S)src/rt/*.cpp \
-                     $(S)src/rt/*/*.cpp \
-                     $(S)src/rt/*/*/*.cpp \
-                     $(S)srcrustllvm/*.cpp)
-ALL_CS := $(filter-out $(S)src/rt/bigint/bigint_ext.cpp \
-                       $(S)src/rt/bigint/bigint_int.cpp \
-                       $(S)src/rt/miniz.cpp \
-                       $(S)src/rt/linenoise/linenoise.c \
-                       $(S)src/rt/linenoise/utf8.c \
-	,$(ALL_CS))
-ALL_HS := $(wildcard $(S)src/rt/*.h \
-                     $(S)src/rt/*/*.h \
-                     $(S)src/rt/*/*/*.h \
-                     $(S)srcrustllvm/*.h)
-ALL_HS := $(filter-out $(S)src/rt/vg/valgrind.h \
-                       $(S)src/rt/vg/memcheck.h \
-                       $(S)src/rt/uthash/uthash.h \
-                       $(S)src/rt/uthash/utlist.h \
-                       $(S)src/rt/msvc/typeof.h \
-                       $(S)src/rt/msvc/stdint.h \
-                       $(S)src/rt/msvc/inttypes.h \
-                       $(S)src/rt/bigint/bigint.h \
-                       $(S)src/rt/linenoise/linenoise.h \
-                       $(S)src/rt/linenoise/utf8.h \
-	,$(ALL_HS))
-
-# Run the tidy script in multiple parts to avoid huge 'echo' commands
 tidy:
 		@$(call E, check: formatting)
-		$(Q)find $(S)src -name '*.r[sc]' \
-		| grep '^$(S)src/test' -v \
-		| xargs -n 10 $(CFG_PYTHON) $(S)src/etc/tidy.py
-		$(Q)find $(S)src/etc -name '*.py' \
-		| xargs -n 10 $(CFG_PYTHON) $(S)src/etc/tidy.py
-		$(Q)echo $(ALL_CS) \
-		| xargs -n 10 $(CFG_PYTHON) $(S)src/etc/tidy.py
-		$(Q)echo $(ALL_HS) \
-		| xargs -n 10 $(CFG_PYTHON) $(S)src/etc/tidy.py
+		$(CFG_PYTHON) src/etc/tidy.py --srcdir $(S)
 
 endif
 
